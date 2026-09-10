@@ -1,0 +1,32 @@
+# Python / Backend
+backend/venv/
+*/__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+backend/cache.db
+backend/*.db
+*.sqlite3
+
+# Node / Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+.npm
+*.log
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# User data exports
+letterboxd-shreyas13-*
+shreyas13_watched.csv

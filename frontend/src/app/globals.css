@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-main: #14181c;
+    --bg-card: #1c2228;
+    --bg-card-hover: #242c34;
+    --border-color: #2c3440;
+    --text-primary: #ffffff;
+    --text-secondary: #99aabb;
+    --text-muted: #556677;
+    --lb-green: #00e054;
+    --lb-blue: #40bcf4;
+    --lb-orange: #ff8000;
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    overflow-x: hidden;
+  }
+}
+
+/* Custom Cinema Glass and Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #14181c;
+}
+::-webkit-scrollbar-thumb {
+  background: #2c3440;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #445566;
+}
+
+.cinema-glass {
+  background: rgba(28, 34, 40, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(44, 52, 64, 0.7);
+}
+
+.cinema-glow-green {
+  box-shadow: 0 0 25px rgba(0, 224, 84, 0.18);
+}
+
+.cinema-glow-blue {
+  box-shadow: 0 0 25px rgba(64, 188, 244, 0.18);
+}
+
+.cinema-glow-orange {
+  box-shadow: 0 0 25px rgba(255, 128, 0, 0.18);
+}
