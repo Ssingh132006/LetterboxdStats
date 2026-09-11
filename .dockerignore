@@ -1,0 +1,12 @@
+node_modules/
+.next/
+backend/venv/
+backend/.venv/
+**/__pycache__/
+**/*.pyc
+**/.pytest_cache/
+backend/cache.db
+.env
+backend/.env
+.git
+.DS_Store
