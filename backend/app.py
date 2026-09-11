@@ -1,0 +1,11 @@
+"""
+Hugging Face Spaces Entrypoint (Gradio / Python SDK - 100% Free, No Credit Card)
+Allows hosting the FastAPI backend without Docker.
+"""
+import os
+import uvicorn
+from app.main import app
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 7860))
+    uvicorn.run("app.main:app", host="0.0.0.0", port=port, reload=False)
