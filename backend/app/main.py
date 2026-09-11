@@ -4,6 +4,8 @@ Serves API endpoints for CSV ingestion, Letterboxd profile scraping,
 TMDB data enrichment, stats calculation, and comparison analysis.
 """
 from typing import Optional, Dict, Any, List
+from dotenv import load_dotenv
+load_dotenv()
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel

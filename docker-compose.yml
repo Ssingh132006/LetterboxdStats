@@ -8,6 +8,7 @@ services:
     ports:
       - "8000:8000"
     environment:
+      - PORT=8000
       - TMDB_API_KEY=${TMDB_API_KEY:-}
     volumes:
       - backend-cache:/app/cache.db
