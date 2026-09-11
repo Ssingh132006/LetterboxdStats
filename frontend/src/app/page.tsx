@@ -20,8 +20,7 @@ import { ComparisonView } from "../components/ComparisonView";
 import { UserStats, ComparisonResult } from "../types";
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ||
-  "http://localhost:8000/api";
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "/api/py";
 
 export default function Home() {
   const [primaryStats, setPrimaryStats] = useState<UserStats | null>(null);
