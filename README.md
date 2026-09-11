@@ -125,3 +125,23 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
    - Switch to the **Compare Taste** tab to view your **Cinema Compatibility Index**, side-by-side Recharts bar chart, and unique talent recommendations.
 5. **Add TMDB API Key (Optional)**:
    - Click **"TMDB API: Key"** in the header to enter your TMDB v3 API key. All movie credits and person filmography totals will be fetched live and cached in SQLite.
+
+---
+
+## ⚡ 100% Free 1-Click Deployment on Vercel (No Credit Card Required)
+
+The project merges the FastAPI backend directly into Next.js using Vercel's native Python Serverless Functions (`frontend/api/index.py` with `frontend/vercel.json`). This means **both frontend and backend are hosted on Vercel for free with zero credit card required**.
+
+### Steps to Deploy:
+1. Push this repository to your GitHub account (already pushed to [LetterboxdStats](https://github.com/Ssingh132006/LetterboxdStats)).
+2. Go to **[vercel.com](https://vercel.com)** and sign in with GitHub (100% free, no credit card required).
+3. Click **"Add New..."** $\rightarrow$ **"Project"** $\rightarrow$ Select **`LetterboxdStats`**.
+4. In the Project Configuration:
+   - **Root Directory**: Click *Edit* and select **`frontend`**.
+   - **Framework Preset**: Next.js (automatically detected).
+   - *(Optional)* Expand **Environment Variables** and add:
+     - `TMDB_API_KEY`: `a156ba385cb9672d42ce6b1bc687afd1`
+5. Click **Deploy**!
+   - Vercel will automatically build the Next.js frontend AND provision the FastAPI Python serverless backend under `/api/py`.
+   - Your full-stack app is live with SSL and zero separate backend costs!
+
