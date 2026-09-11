@@ -166,31 +166,26 @@ async def scrape_letterboxd_user(
     if not clean_username:
         raise ValueError("Letterboxd username is required")
 
-    # Check cache if not forcing refresh and not requesting all pages on a previously truncated cache
+    # Check cache if not forcing refresh
     if not force_refresh:
         cached = get_cached_profile(clean_username)
-        if cached:
-            # If cached has substantial films or max_pages was already satisfied
-            if max_pages and len(cached) >= max_pages * 70:
-                return {
-                    "username": clean_username,
-                    "total_films": len(cached),
-                    "films": cached,
-                    "cached": True,
-                }
-            elif not max_pages and len(cached) > 200:
-                return {
-                    "username": clean_username,
-                    "total_films": len(cached),
-                    "films": cached,
-                    "cached": True,
-                }
+        if cached and len(cached) > 0:
+            return {
+                "username": clean_username,
+                "total_films": len(cached),
+                "total_pages_scraped": (len(cached) + 71) // 72,
+                "total_available_pages": (len(cached) + 71) // 72,
+                "films": cached,
+                "cached": True,
+                "engine": "cache",
+            }
 
     all_films: List[Dict[str, Any]] = []
     seen_identifiers = set()
 
     # Use curl_cffi with Chrome 124 TLS impersonation
-    session_ctx = AsyncSession(impersonate="chrome124") if AsyncSession else httpx.AsyncClient(headers=DEFAULT_HEADERS, timeout=15.0)
+    engine_name = "curl_cffi" if AsyncSession else "httpx"
+    session_ctx = AsyncSession(impersonate="chrome124") if AsyncSession else httpx.AsyncClient(headers=DEFAULT_HEADERS, timeout=20.0)
 
     async with session_ctx as session:
         # Step 1: Fetch Page 1
@@ -208,7 +203,6 @@ async def scrape_letterboxd_user(
 
         page1_films = extract_films_from_html(resp.text)
         if not page1_films:
-            # Check if user has zero watched films
             return {
                 "username": clean_username,
                 "total_films": 0,
@@ -216,6 +210,7 @@ async def scrape_letterboxd_user(
                 "total_available_pages": 1,
                 "films": [],
                 "cached": False,
+                "engine": engine_name,
             }
 
         for f in page1_films:
@@ -242,32 +237,31 @@ async def scrape_letterboxd_user(
             # Scrape ALL pages (safety ceiling of 100 pages = 7,200 films)
             target_pages = min(total_available_pages, 100)
 
-        # Step 3: Fetch remaining pages concurrently in batches of 5
+        # Step 3: Fetch remaining pages sequentially with polite delay and retries
         if target_pages > 1:
-            batch_size = 5
-            for batch_start in range(2, target_pages + 1, batch_size):
-                batch_end = min(batch_start + batch_size, target_pages + 1)
-                
-                async def fetch_page(p_num: int):
-                    page_url = f"https://letterboxd.com/{clean_username}/films/page/{p_num}/"
+            for p_num in range(2, target_pages + 1):
+                page_url = f"https://letterboxd.com/{clean_username}/films/page/{p_num}/"
+                p_films = []
+                for attempt in range(3):
                     try:
                         p_resp = await session.get(page_url)
                         if p_resp.status_code == 200:
-                            return extract_films_from_html(p_resp.text)
+                            p_films = extract_films_from_html(p_resp.text)
+                            if p_films:
+                                break
+                        elif p_resp.status_code in (403, 429):
+                            await asyncio.sleep(0.4 * (attempt + 1))
                     except Exception:
-                        pass
-                    return []
+                        await asyncio.sleep(0.3)
 
-                batch_results = await asyncio.gather(*[fetch_page(p) for p in range(batch_start, batch_end)])
-                for p_films in batch_results:
-                    for f in p_films:
-                        ident = f"{f['title'].lower()}:{f.get('year')}"
-                        if ident not in seen_identifiers:
-                            seen_identifiers.add(ident)
-                            all_films.append(f)
+                for f in p_films:
+                    ident = f"{f['title'].lower()}:{f.get('year')}"
+                    if ident not in seen_identifiers:
+                        seen_identifiers.add(ident)
+                        all_films.append(f)
 
-                # Polite delay between batches
-                await asyncio.sleep(0.15)
+                # Polite delay between pages to prevent Cloudflare rate-limiting
+                await asyncio.sleep(0.2)
 
         # Step 4: Augment with RSS feed if available
         rss_items = await fetch_rss_feed(clean_username, session)
@@ -281,6 +275,22 @@ async def scrape_letterboxd_user(
                 if r_item.get("tmdb_id"):
                     f["tmdb_id"] = r_item["tmdb_id"]
 
+    # Step 5: Truncation Protection Fallback
+    # If live scrape got truncated (e.g. only 72 films when user has multiple pages)
+    # but we already have a larger cached film list, use the cached profile!
+    cached = get_cached_profile(clean_username)
+    if cached and len(cached) > len(all_films):
+        all_films = cached
+        return {
+            "username": clean_username,
+            "total_films": len(all_films),
+            "total_pages_scraped": target_pages,
+            "total_available_pages": total_available_pages,
+            "films": all_films,
+            "cached": True,
+            "engine": "cache_fallback",
+        }
+
     # Save complete dataset to cache
     if all_films:
         set_cached_profile(clean_username, all_films)
@@ -292,4 +302,5 @@ async def scrape_letterboxd_user(
         "total_available_pages": total_available_pages,
         "films": all_films,
         "cached": False,
+        "engine": engine_name,
     }

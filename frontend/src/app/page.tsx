@@ -125,7 +125,7 @@ export default function Home() {
         body: JSON.stringify({
           username,
           max_pages: scrapeAll ? null : 5,
-          force_refresh: true,
+          force_refresh: false,
           user_label: `@${username}`,
         }),
       });
